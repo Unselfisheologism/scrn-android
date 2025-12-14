@@ -61,7 +61,7 @@ jobs:
         run: ./gradlew :app:assembleRelease --no-daemon
 
       - name: Sign release APK
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && secrets.SIGNING_KEY != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           ALIAS: ${{ secrets.ALIAS }}
@@ -102,14 +102,14 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
 
       - name: Upload signed APK artifact
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && secrets.SIGNING_KEY != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v4
         with:
           name: app-release-signed
           path: app/build/outputs/apk/release/app-release-signed.apk
 
       - name: Create GitHub Release
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && secrets.SIGNING_KEY != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
