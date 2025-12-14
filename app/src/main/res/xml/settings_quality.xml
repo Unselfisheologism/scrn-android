@@ -6,6 +6,12 @@
       android:title="@string/setting_category_quality">
 
     <Preference
+        android:key="quality_preset"
+        android:layout="@layout/custom_preference"
+        android:summary="@string/setting_quality_preset_desc"
+        android:title="@string/setting_quality_preset"/>
+
+    <Preference
         android:key="frame_rate"
         android:layout="@layout/custom_preference"
         android:summary="@string/setting_framerate_desc"

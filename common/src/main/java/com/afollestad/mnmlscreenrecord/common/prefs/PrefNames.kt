@@ -23,8 +23,11 @@ object PrefNames {
   const val PREF_DARK_MODE_AUTOMATIC = "dark_mode_automatic"
   const val PREF_DARK_MODE_START = "dark_mode_automatic_start"
   const val PREF_DARK_MODE_END = "dark_mode_automatic_end"
+  const val PREF_WATERMARK_ENABLED = "watermark_enabled"
+  const val PREF_WATERMARK_TEXT = "watermark_text"
 
   // Quality
+  const val PREF_QUALITY_PRESET = "quality_preset"
   const val PREF_FRAME_RATE = "frame_rate"
   const val PREF_RESOLUTION_WIDTH = "record_resolution_width"
   const val PREF_RESOLUTION_HEIGHT = "record_resolution_height"
@@ -33,6 +36,7 @@ object PrefNames {
 
   // Recording
   const val PREF_COUNTDOWN = "countdown"
+  const val PREF_MAX_DURATION_MINUTES = "max_recording_duration_minutes"
   const val PREF_RECORD_AUDIO = "record_audio"
   const val PREF_RECORDINGS_FOLDER = "recordings_folder"
 

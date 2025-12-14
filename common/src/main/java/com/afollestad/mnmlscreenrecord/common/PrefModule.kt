@@ -25,6 +25,10 @@ import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE_AUT
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE_END
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE_START
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_FRAME_RATE
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_MAX_DURATION_MINUTES
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_QUALITY_PRESET
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_ENABLED
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_TEXT
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORDINGS_FOLDER
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORD_AUDIO
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RESOLUTION_HEIGHT
@@ -60,7 +64,19 @@ val prefModule = module {
     get<RxkPrefs>().string(PREF_DARK_MODE_END, "8:00")
   }
 
+  factory(named(PREF_WATERMARK_ENABLED)) {
+    get<RxkPrefs>().boolean(PREF_WATERMARK_ENABLED, false)
+  }
+
+  factory(named(PREF_WATERMARK_TEXT)) {
+    get<RxkPrefs>().string(PREF_WATERMARK_TEXT, "MNML")
+  }
+
   // Quality
+  factory(named(PREF_QUALITY_PRESET)) {
+    get<RxkPrefs>().string(PREF_QUALITY_PRESET, "custom")
+  }
+
   factory(named(PREF_FRAME_RATE)) {
     get<RxkPrefs>().integer(PREF_FRAME_RATE, 30)
   }
@@ -84,6 +100,10 @@ val prefModule = module {
   // Recording
   factory(named(PREF_COUNTDOWN)) {
     get<RxkPrefs>().integer(PREF_COUNTDOWN, 3)
+  }
+
+  factory(named(PREF_MAX_DURATION_MINUTES)) {
+    get<RxkPrefs>().integer(PREF_MAX_DURATION_MINUTES, 0)
   }
 
   factory(named(PREF_RECORDINGS_FOLDER)) {

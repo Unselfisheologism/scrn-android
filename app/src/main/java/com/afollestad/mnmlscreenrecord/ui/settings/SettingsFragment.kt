@@ -22,6 +22,7 @@ import com.afollestad.mnmlscreenrecord.R
 import com.afollestad.mnmlscreenrecord.ui.settings.base.BaseSettingsFragment
 import com.afollestad.mnmlscreenrecord.ui.settings.sub.SettingsControlsFragment
 import com.afollestad.mnmlscreenrecord.ui.settings.sub.SettingsQualityFragment
+import com.afollestad.mnmlscreenrecord.ui.settings.sub.SettingsPresetsFragment
 import com.afollestad.mnmlscreenrecord.ui.settings.sub.SettingsRecordingFragment
 import com.afollestad.mnmlscreenrecord.ui.settings.sub.SettingsUiFragment
 
@@ -35,6 +36,7 @@ class SettingsFragment : BaseSettingsFragment() {
     findPreference("recording").setOnPreferenceClickListener { navigateTo(it.key) }
     findPreference("quality").setOnPreferenceClickListener { navigateTo(it.key) }
     findPreference("controls").setOnPreferenceClickListener { navigateTo(it.key) }
+    findPreference("presets").setOnPreferenceClickListener { navigateTo(it.key) }
 
     if (BuildCompat.isAtLeastQ()) {
       // Dark theme is based on system settings on Q+
@@ -55,6 +57,7 @@ class SettingsFragment : BaseSettingsFragment() {
       "recording" -> SettingsRecordingFragment()
       "quality" -> SettingsQualityFragment()
       "controls" -> SettingsControlsFragment()
+      "presets" -> SettingsPresetsFragment()
       else -> return false
     }
 

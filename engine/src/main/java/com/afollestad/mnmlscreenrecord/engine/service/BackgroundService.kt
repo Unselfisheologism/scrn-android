@@ -17,9 +17,14 @@ package com.afollestad.mnmlscreenrecord.engine.service
 
 import android.app.Service
 import android.content.Intent
+import android.content.Intent.ACTION_BATTERY_CHANGED
 import android.content.Intent.ACTION_SCREEN_OFF
+import android.content.IntentFilter
 import android.hardware.SensorManager
+import android.os.BatteryManager
+import android.os.Handler
 import android.os.IBinder
+import android.os.StatFs
 import android.os.Vibrator
 import androidx.lifecycle.LifecycleOwner
 import com.afollestad.mnmlscreenrecord.common.intent.IntentReceiver
@@ -27,12 +32,16 @@ import com.afollestad.mnmlscreenrecord.common.lifecycle.SimpleLifecycle
 import com.afollestad.mnmlscreenrecord.common.misc.startActivity
 import com.afollestad.mnmlscreenrecord.common.permissions.PermissionChecker
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_ALWAYS_SHOW_CONTROLS
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORDINGS_FOLDER
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_STOP_ON_SCREEN_OFF
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_STOP_ON_SHAKE
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_ENABLED
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_TEXT
 import com.afollestad.mnmlscreenrecord.common.rx.attachLifecycle
 import com.afollestad.mnmlscreenrecord.engine.capture.CaptureEngine
 import com.afollestad.mnmlscreenrecord.engine.gesture.ShakeListener
 import com.afollestad.mnmlscreenrecord.engine.overlay.OverlayManager
+import com.afollestad.mnmlscreenrecord.engine.overlay.WatermarkOverlay
 import com.afollestad.mnmlscreenrecord.engine.permission.OverlayPermissionActivity
 import com.afollestad.mnmlscreenrecord.engine.permission.StoragePermissionActivity
 import com.afollestad.mnmlscreenrecord.engine.recordings.Recording
@@ -62,6 +71,10 @@ class BackgroundService : Service(), LifecycleOwner {
   companion object {
     private const val ID = 77
 
+    private const val MIN_STORAGE_BYTES = 100L * 1024L * 1024L
+    private const val BATTERY_MIN_PERCENT = 10
+    private const val LIMIT_CHECK_INTERVAL_MS = 15_000L
+
     const val PERMISSION_DENIED =
       "com.afollestad.mnmlscreenrecord.service.PERMISSION_DENIED"
     const val MAIN_ACTIVITY_CLASS = "main_activity_class"
@@ -69,6 +82,7 @@ class BackgroundService : Service(), LifecycleOwner {
 
   private val lifecycle = SimpleLifecycle(this)
   private val overlayManager by inject<OverlayManager>()
+  private val watermarkOverlay by inject<WatermarkOverlay>()
   private val notifications by inject<Notifications>()
   private val captureEngine by inject<CaptureEngine>()
   private val recordingScanner by inject<RecordingScanner>()
@@ -83,10 +97,16 @@ class BackgroundService : Service(), LifecycleOwner {
       named(PREF_ALWAYS_SHOW_CONTROLS)
   )
   private val stopOnShakePref by inject<Pref<Boolean>>(named(PREF_STOP_ON_SHAKE))
+  private val recordingsFolderPref by inject<Pref<String>>(named(PREF_RECORDINGS_FOLDER))
+  private val watermarkEnabledPref by inject<Pref<Boolean>>(named(PREF_WATERMARK_ENABLED))
+  private val watermarkTextPref by inject<Pref<String>>(named(PREF_WATERMARK_TEXT))
 
   private val shakeListener = ShakeListener(sensorManager, vibrator) {
     stopRecording(false)
   }
+
+  private val limitHandler = Handler()
+  private var limitRunnable: Runnable? = null
 
   override fun onBind(intent: Intent?): IBinder? = null
 
@@ -147,8 +167,28 @@ class BackgroundService : Service(), LifecycleOwner {
         .subscribe { maybeStartShakeListener() }
         .attachLifecycle(this)
 
+    captureEngine.onStart()
+        .subscribe {
+          startLimitChecks()
+          if (watermarkEnabledPref.get()) {
+            watermarkOverlay.show(watermarkTextPref.get())
+          }
+        }
+        .attachLifecycle(this)
+
+    captureEngine.onCancel()
+        .subscribe {
+          stopLimitChecks()
+          watermarkOverlay.hide()
+          shakeListener.stop()
+          updateForeground(false)
+        }
+        .attachLifecycle(this)
+
     captureEngine.onStop()
         .subscribe { file ->
+          stopLimitChecks()
+          watermarkOverlay.hide()
           shakeListener.stop()
           updateForeground(false)
           recordingScanner.scan(file) { recording ->
@@ -168,7 +208,9 @@ class BackgroundService : Service(), LifecycleOwner {
     } else if (!permissionChecker.hasStoragePermission()) {
       startActivity<StoragePermissionActivity>()
       return
-    } else if (!permissionChecker.hasOverlayPermission() && overlayManager.willCountdown()) {
+    } else if (!permissionChecker.hasOverlayPermission() &&
+        (overlayManager.willCountdown() || watermarkEnabledPref.get())
+    ) {
       startActivity<OverlayPermissionActivity>()
       return
     }
@@ -190,6 +232,8 @@ class BackgroundService : Service(), LifecycleOwner {
 
   override fun onDestroy() {
     log("onDestroy()")
+    stopLimitChecks()
+    watermarkOverlay.hide()
     shakeListener.stop()
     captureEngine.stop()
     lifecycle.onDestroy()
@@ -213,6 +257,69 @@ class BackgroundService : Service(), LifecycleOwner {
             isRecording = recording
         )
     )
+  }
+
+  private fun startLimitChecks() {
+    stopLimitChecks()
+
+    limitRunnable = object : Runnable {
+      override fun run() {
+        checkAutoStopLimits()
+        limitHandler.postDelayed(this, LIMIT_CHECK_INTERVAL_MS)
+      }
+    }.also { limitHandler.post(it) }
+  }
+
+  private fun stopLimitChecks() {
+    limitRunnable?.let(limitHandler::removeCallbacks)
+    limitRunnable = null
+  }
+
+  private fun checkAutoStopLimits() {
+    if (!captureEngine.isStarted()) {
+      stopLimitChecks()
+      return
+    }
+
+    val availableBytes = availableBytesInRecordingsFolder()
+    if (availableBytes in 1L until MIN_STORAGE_BYTES) {
+      stopLimitChecks()
+      stopRecording(false)
+      ErrorDialogActivity.show(
+          this,
+          Exception("Recording stopped due to low storage (less than 100MB remaining).")
+      )
+      return
+    }
+
+    val batteryPercent = batteryPercent()
+    if (batteryPercent in 0..BATTERY_MIN_PERCENT) {
+      stopLimitChecks()
+      stopRecording(false)
+      ErrorDialogActivity.show(
+          this,
+          Exception("Recording stopped due to low battery ($batteryPercent%).")
+      )
+    }
+  }
+
+  private fun availableBytesInRecordingsFolder(): Long {
+    return try {
+      val folder = recordingsFolderPref.get()
+      StatFs(folder).availableBytes
+    } catch (_: Throwable) {
+      -1L
+    }
+  }
+
+  private fun batteryPercent(): Int {
+    val status = registerReceiver(null, IntentFilter(ACTION_BATTERY_CHANGED)) ?: return -1
+
+    val level = status.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+    val scale = status.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+    if (level < 0 || scale <= 0) return -1
+
+    return ((level / scale.toFloat()) * 100f).toInt()
   }
 
   private fun maybeStartShakeListener() {

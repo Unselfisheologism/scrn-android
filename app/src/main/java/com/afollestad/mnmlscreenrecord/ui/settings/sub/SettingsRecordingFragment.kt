@@ -23,10 +23,12 @@ import androidx.preference.SwitchPreference
 import com.afollestad.assent.Permission.RECORD_AUDIO
 import com.afollestad.assent.runWithPermissions
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.afollestad.mnmlscreenrecord.R
 import com.afollestad.mnmlscreenrecord.common.intent.UrlLauncher
 import com.afollestad.mnmlscreenrecord.common.permissions.PermissionChecker
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_COUNTDOWN
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_MAX_DURATION_MINUTES
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORDINGS_FOLDER
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORD_AUDIO
 import com.afollestad.mnmlscreenrecord.common.rx.attachLifecycle
@@ -44,6 +46,7 @@ class SettingsRecordingFragment : BaseSettingsFragment() {
   private val permissionChecker by inject<PermissionChecker>()
   private val urlLauncher by inject<UrlLauncher> { parametersOf(activity!!) }
   private val countdownPref by inject<Pref<Int>>(named(PREF_COUNTDOWN))
+  private val maxDurationMinutesPref by inject<Pref<Int>>(named(PREF_MAX_DURATION_MINUTES))
   private val recordAudioPref by inject<Pref<Boolean>>(named(PREF_RECORD_AUDIO))
   internal val recordingsFolderPref by inject<Pref<String>>(named(PREF_RECORDINGS_FOLDER))
 
@@ -54,6 +57,7 @@ class SettingsRecordingFragment : BaseSettingsFragment() {
     setPreferencesFromResource(R.xml.settings_recording, rootKey)
 
     setupCountdownPref()
+    setupMaxDurationPref()
     setupRecordAudioPref()
     setupRecordingsFolderPref()
 
@@ -92,6 +96,39 @@ class SettingsRecordingFragment : BaseSettingsFragment() {
             resources.getQuantityString(
                 R.plurals.setting_countdown_desc, it, it
             )
+          }
+        }
+        .attachLifecycle(this)
+  }
+
+  private fun setupMaxDurationPref() {
+    val maxDurationEntry = findPreference(PREF_MAX_DURATION_MINUTES)
+
+    maxDurationEntry.setOnPreferenceClickListener {
+      val rawValues = resources.getIntArray(R.array.max_duration_values)
+      val currentValue = maxDurationMinutesPref.get()
+      val defaultIndex = rawValues.indexOf(currentValue).coerceAtLeast(0)
+
+      MaterialDialog(settingsActivity).show {
+        title(R.string.setting_max_duration)
+        listItemsSingleChoice(
+            res = R.array.max_duration_options,
+            initialSelection = defaultIndex
+        ) { _, which, _ ->
+          maxDurationMinutesPref.set(rawValues[which])
+        }
+        positiveButton(R.string.select)
+      }
+      true
+    }
+
+    maxDurationMinutesPref.observe()
+        .distinctUntilChanged()
+        .subscribe { minutes ->
+          maxDurationEntry.summary = if (minutes <= 0) {
+            resources.getString(R.string.setting_max_duration_unlimited)
+          } else {
+            resources.getQuantityString(R.plurals.setting_max_duration_minutes_desc, minutes, minutes)
           }
         }
         .attachLifecycle(this)

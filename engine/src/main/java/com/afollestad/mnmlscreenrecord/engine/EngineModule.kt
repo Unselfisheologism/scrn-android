@@ -30,6 +30,7 @@ import com.afollestad.mnmlscreenrecord.common.misc.systemService
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_AUDIO_BIT_RATE
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_COUNTDOWN
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_FRAME_RATE
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_MAX_DURATION_MINUTES
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORDINGS_FOLDER
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORD_AUDIO
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RESOLUTION_HEIGHT
@@ -39,6 +40,8 @@ import com.afollestad.mnmlscreenrecord.engine.capture.CaptureEngine
 import com.afollestad.mnmlscreenrecord.engine.capture.RealCaptureEngine
 import com.afollestad.mnmlscreenrecord.engine.overlay.OverlayManager
 import com.afollestad.mnmlscreenrecord.engine.overlay.RealOverlayManager
+import com.afollestad.mnmlscreenrecord.engine.overlay.RealWatermarkOverlay
+import com.afollestad.mnmlscreenrecord.engine.overlay.WatermarkOverlay
 import com.afollestad.mnmlscreenrecord.engine.recordings.RealRecordingManager
 import com.afollestad.mnmlscreenrecord.engine.recordings.RealRecordingScanner
 import com.afollestad.mnmlscreenrecord.engine.recordings.RecordingManager
@@ -85,13 +88,16 @@ val engineModule = module {
         get(named(PREF_RECORD_AUDIO)),
         get(named(PREF_AUDIO_BIT_RATE)),
         get(named(PREF_RESOLUTION_WIDTH)),
-        get(named(PREF_RESOLUTION_HEIGHT))
+        get(named(PREF_RESOLUTION_HEIGHT)),
+        get(named(PREF_MAX_DURATION_MINUTES))
     )
   } bind CaptureEngine::class
 
   factory {
     RealOverlayManager(get(), get(), get(named(PREF_COUNTDOWN)), get())
   } bind OverlayManager::class
+
+  single { RealWatermarkOverlay(get(), get(), get()) } bind WatermarkOverlay::class
 
   factory { RealServiceController(get()) } bind ServiceController::class
 }

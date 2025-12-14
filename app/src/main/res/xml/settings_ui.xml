@@ -31,6 +31,19 @@
         android:summary="@string/setting_dark_mode_automatic_end_desc"
         android:title="@string/setting_dark_mode_automatic_end"/>
 
+    <SwitchPreference
+        android:key="watermark_enabled"
+        android:layout="@layout/custom_preference"
+        android:summaryOff="@string/setting_watermark_off"
+        android:summaryOn="@string/setting_watermark_on"
+        android:title="@string/setting_watermark"/>
+
+    <Preference
+        android:key="watermark_text"
+        android:layout="@layout/custom_preference"
+        android:summary="@string/setting_watermark_text_desc"
+        android:title="@string/setting_watermark_text"/>
+
   </PreferenceCategory>
 
 </PreferenceScreen>
