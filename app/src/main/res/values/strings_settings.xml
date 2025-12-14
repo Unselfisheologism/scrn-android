@@ -17,6 +17,13 @@
   <string name="setting_dark_mode_automatic_end">Dark Mode End</string>
   <string name="setting_dark_mode_automatic_end_desc">Dark mode turns itself off at %1$s.</string>
 
+  <string name="setting_watermark">Watermark</string>
+  <string name="setting_watermark_on">A watermark will be shown in recordings.</string>
+  <string name="setting_watermark_off">No watermark will be shown in recordings.</string>
+
+  <string name="setting_watermark_text">Watermark Text</string>
+  <string name="setting_watermark_text_desc">Shown as: %1$s</string>
+
   <!-- Quality -->
   <string name="setting_category_quality">Quality</string>
   <string name="setting_category_quality_desc">Modify audio and video quality such as frame rate and bit rate.</string>
@@ -88,6 +95,26 @@
   <!-- Controls -->
   <string name="setting_category_controls">Controls</string>
   <string name="setting_category_controls_desc">Modify recording controls, such as stop on shake, stop on screen off, etc.</string>
+
+  <!-- Presets -->
+  <string name="setting_category_presets">Presets</string>
+  <string name="setting_category_presets_desc">Save and share collections of your settings.</string>
+
+  <string name="setting_save_preset">Save Preset</string>
+  <string name="setting_save_preset_desc">Save your current settings as a named preset.</string>
+
+  <string name="setting_apply_preset">Apply Preset</string>
+  <string name="setting_apply_preset_desc">Apply a previously saved preset.</string>
+
+  <string name="setting_share_preset">Share Preset</string>
+  <string name="setting_share_preset_desc">Share a preset as JSON.</string>
+
+  <string name="setting_delete_preset">Delete Preset</string>
+  <string name="setting_delete_preset_desc">Delete a saved preset.</string>
+
+  <string name="setting_no_presets">No presets saved.</string>
+  <string name="setting_preset_name">Preset Name</string>
+  <string name="setting_preset_shared">Preset JSON copied to share.</string>
 
   <string name="setting_stop_on_screen_off">Stop on Screen Off</string>
   <string name="setting_stop_on_screen_off_desc_on">

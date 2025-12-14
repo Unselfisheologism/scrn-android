@@ -40,6 +40,8 @@ import com.afollestad.mnmlscreenrecord.engine.capture.CaptureEngine
 import com.afollestad.mnmlscreenrecord.engine.capture.RealCaptureEngine
 import com.afollestad.mnmlscreenrecord.engine.overlay.OverlayManager
 import com.afollestad.mnmlscreenrecord.engine.overlay.RealOverlayManager
+import com.afollestad.mnmlscreenrecord.engine.overlay.RealWatermarkOverlay
+import com.afollestad.mnmlscreenrecord.engine.overlay.WatermarkOverlay
 import com.afollestad.mnmlscreenrecord.engine.recordings.RealRecordingManager
 import com.afollestad.mnmlscreenrecord.engine.recordings.RealRecordingScanner
 import com.afollestad.mnmlscreenrecord.engine.recordings.RecordingManager
@@ -94,6 +96,8 @@ val engineModule = module {
   factory {
     RealOverlayManager(get(), get(), get(named(PREF_COUNTDOWN)), get())
   } bind OverlayManager::class
+
+  single { RealWatermarkOverlay(get(), get(), get()) } bind WatermarkOverlay::class
 
   factory { RealServiceController(get()) } bind ServiceController::class
 }

@@ -23,6 +23,8 @@ object PrefNames {
   const val PREF_DARK_MODE_AUTOMATIC = "dark_mode_automatic"
   const val PREF_DARK_MODE_START = "dark_mode_automatic_start"
   const val PREF_DARK_MODE_END = "dark_mode_automatic_end"
+  const val PREF_WATERMARK_ENABLED = "watermark_enabled"
+  const val PREF_WATERMARK_TEXT = "watermark_text"
 
   // Quality
   const val PREF_QUALITY_PRESET = "quality_preset"

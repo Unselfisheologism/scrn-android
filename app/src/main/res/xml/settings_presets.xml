@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <PreferenceCategory
+      android:layout="@layout/custom_preference_category"
+      android:title="@string/setting_category_presets">
+
+    <Preference
+        android:key="save_preset"
+        android:layout="@layout/custom_preference"
+        android:summary="@string/setting_save_preset_desc"
+        android:title="@string/setting_save_preset" />
+
+    <Preference
+        android:key="apply_preset"
+        android:layout="@layout/custom_preference"
+        android:summary="@string/setting_apply_preset_desc"
+        android:title="@string/setting_apply_preset" />
+
+    <Preference
+        android:key="share_preset"
+        android:layout="@layout/custom_preference"
+        android:summary="@string/setting_share_preset_desc"
+        android:title="@string/setting_share_preset" />
+
+    <Preference
+        android:key="delete_preset"
+        android:layout="@layout/custom_preference"
+        android:summary="@string/setting_delete_preset_desc"
+        android:title="@string/setting_delete_preset" />
+
+  </PreferenceCategory>
+
+</PreferenceScreen>

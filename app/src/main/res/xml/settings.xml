@@ -29,4 +29,11 @@
       android:summary="@string/setting_category_controls_desc"
       android:title="@string/setting_category_controls"/>
 
+  <PreferenceScreen
+      android:icon="@drawable/ic_share"
+      android:key="presets"
+      android:layout="@layout/custom_preference_screen"
+      android:summary="@string/setting_category_presets_desc"
+      android:title="@string/setting_category_presets"/>
+
 </PreferenceScreen>

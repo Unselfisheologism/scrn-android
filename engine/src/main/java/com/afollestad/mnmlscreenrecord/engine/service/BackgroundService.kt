@@ -35,10 +35,13 @@ import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_ALWAYS_SHOW_C
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_RECORDINGS_FOLDER
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_STOP_ON_SCREEN_OFF
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_STOP_ON_SHAKE
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_ENABLED
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_TEXT
 import com.afollestad.mnmlscreenrecord.common.rx.attachLifecycle
 import com.afollestad.mnmlscreenrecord.engine.capture.CaptureEngine
 import com.afollestad.mnmlscreenrecord.engine.gesture.ShakeListener
 import com.afollestad.mnmlscreenrecord.engine.overlay.OverlayManager
+import com.afollestad.mnmlscreenrecord.engine.overlay.WatermarkOverlay
 import com.afollestad.mnmlscreenrecord.engine.permission.OverlayPermissionActivity
 import com.afollestad.mnmlscreenrecord.engine.permission.StoragePermissionActivity
 import com.afollestad.mnmlscreenrecord.engine.recordings.Recording
@@ -79,6 +82,7 @@ class BackgroundService : Service(), LifecycleOwner {
 
   private val lifecycle = SimpleLifecycle(this)
   private val overlayManager by inject<OverlayManager>()
+  private val watermarkOverlay by inject<WatermarkOverlay>()
   private val notifications by inject<Notifications>()
   private val captureEngine by inject<CaptureEngine>()
   private val recordingScanner by inject<RecordingScanner>()
@@ -94,6 +98,8 @@ class BackgroundService : Service(), LifecycleOwner {
   )
   private val stopOnShakePref by inject<Pref<Boolean>>(named(PREF_STOP_ON_SHAKE))
   private val recordingsFolderPref by inject<Pref<String>>(named(PREF_RECORDINGS_FOLDER))
+  private val watermarkEnabledPref by inject<Pref<Boolean>>(named(PREF_WATERMARK_ENABLED))
+  private val watermarkTextPref by inject<Pref<String>>(named(PREF_WATERMARK_TEXT))
 
   private val shakeListener = ShakeListener(sensorManager, vibrator) {
     stopRecording(false)
@@ -162,12 +168,18 @@ class BackgroundService : Service(), LifecycleOwner {
         .attachLifecycle(this)
 
     captureEngine.onStart()
-        .subscribe { startLimitChecks() }
+        .subscribe {
+          startLimitChecks()
+          if (watermarkEnabledPref.get()) {
+            watermarkOverlay.show(watermarkTextPref.get())
+          }
+        }
         .attachLifecycle(this)
 
     captureEngine.onCancel()
         .subscribe {
           stopLimitChecks()
+          watermarkOverlay.hide()
           shakeListener.stop()
           updateForeground(false)
         }
@@ -176,6 +188,7 @@ class BackgroundService : Service(), LifecycleOwner {
     captureEngine.onStop()
         .subscribe { file ->
           stopLimitChecks()
+          watermarkOverlay.hide()
           shakeListener.stop()
           updateForeground(false)
           recordingScanner.scan(file) { recording ->
@@ -195,7 +208,9 @@ class BackgroundService : Service(), LifecycleOwner {
     } else if (!permissionChecker.hasStoragePermission()) {
       startActivity<StoragePermissionActivity>()
       return
-    } else if (!permissionChecker.hasOverlayPermission() && overlayManager.willCountdown()) {
+    } else if (!permissionChecker.hasOverlayPermission() &&
+        (overlayManager.willCountdown() || watermarkEnabledPref.get())
+    ) {
       startActivity<OverlayPermissionActivity>()
       return
     }
@@ -218,6 +233,7 @@ class BackgroundService : Service(), LifecycleOwner {
   override fun onDestroy() {
     log("onDestroy()")
     stopLimitChecks()
+    watermarkOverlay.hide()
     shakeListener.stop()
     captureEngine.stop()
     lifecycle.onDestroy()

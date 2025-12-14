@@ -17,24 +17,30 @@ package com.afollestad.mnmlscreenrecord.ui.settings.sub
 
 import android.os.Bundle
 import androidx.preference.SwitchPreference
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.customview.customView
+import com.afollestad.materialdialogs.customview.getCustomView
 import com.afollestad.mnmlscreenrecord.R
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE_AUTOMATIC
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE_END
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_DARK_MODE_START
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_ENABLED
+import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_TEXT
 import com.afollestad.mnmlscreenrecord.common.rx.attachLifecycle
 import com.afollestad.mnmlscreenrecord.theming.splitTime
 import com.afollestad.mnmlscreenrecord.ui.settings.base.BaseSettingsFragment
 import com.afollestad.mnmlscreenrecord.ui.settings.dialogs.TimeCallback
 import com.afollestad.mnmlscreenrecord.ui.settings.dialogs.TimePickerDialog
 import com.afollestad.rxkprefs.Pref
-import org.koin.android.ext.android.inject
-import org.koin.core.qualifier.named
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Calendar.HOUR_OF_DAY
 import java.util.Calendar.MINUTE
 import java.util.Locale
+import kotlinx.android.synthetic.main.dialog_text_input.view.input
+import org.koin.android.ext.android.inject
+import org.koin.core.qualifier.named
 
 /** @author Aidan Follestad (@afollestad) */
 class SettingsUiFragment : BaseSettingsFragment(), TimeCallback {
@@ -43,6 +49,8 @@ class SettingsUiFragment : BaseSettingsFragment(), TimeCallback {
   private val darkModeAutoPref by inject<Pref<Boolean>>(named(PREF_DARK_MODE_AUTOMATIC))
   private val darkModeStartPref by inject<Pref<String>>(named(PREF_DARK_MODE_START))
   private val darkModeEndPref by inject<Pref<String>>(named(PREF_DARK_MODE_END))
+  private val watermarkEnabledPref by inject<Pref<Boolean>>(named(PREF_WATERMARK_ENABLED))
+  private val watermarkTextPref by inject<Pref<String>>(named(PREF_WATERMARK_TEXT))
 
   override fun onCreatePreferences(
     savedInstanceState: Bundle?,
@@ -108,6 +116,41 @@ class SettingsUiFragment : BaseSettingsFragment(), TimeCallback {
           darkModeEndEntry.summary =
             getString(R.string.setting_dark_mode_automatic_end_desc, formattedTime)
         }
+        .attachLifecycle(this)
+
+    val watermarkEnabledEntry = findPreference(PREF_WATERMARK_ENABLED) as SwitchPreference
+    val watermarkTextEntry = findPreference(PREF_WATERMARK_TEXT)
+
+    watermarkEnabledEntry.setOnPreferenceChangeListener { _, newValue ->
+      watermarkEnabledPref.set(newValue as Boolean)
+      true
+    }
+
+    watermarkEnabledPref.observe()
+        .distinctUntilChanged()
+        .subscribe { enabled ->
+          watermarkEnabledEntry.isChecked = enabled
+          watermarkTextEntry.isEnabled = enabled
+        }
+        .attachLifecycle(this)
+
+    watermarkTextEntry.setOnPreferenceClickListener {
+      val dialog = MaterialDialog(settingsActivity).show {
+        title(R.string.setting_watermark_text)
+        customView(R.layout.dialog_text_input)
+        positiveButton(R.string.select) {
+          val input = getCustomView()?.input ?: return@positiveButton
+          watermarkTextPref.set(input.text.toString())
+        }
+      }
+
+      dialog.getCustomView()?.input?.setText(watermarkTextPref.get())
+      true
+    }
+
+    watermarkTextPref.observe()
+        .distinctUntilChanged()
+        .subscribe { watermarkTextEntry.summary = getString(R.string.setting_watermark_text_desc, it) }
         .attachLifecycle(this)
   }
 
