@@ -59,6 +59,9 @@ dependencies {
     transitive = true
   }
 
+  // Prebid Mobile SDK for Media.net ads
+  implementation 'org.prebid:prebid-mobile-sdk:2.1.8'
+
   // Test
   testImplementation 'junit:junit:' + versions.junit
   testImplementation 'org.mockito:mockito-core:' + versions.mockito
