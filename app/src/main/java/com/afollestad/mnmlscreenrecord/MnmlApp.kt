@@ -24,11 +24,8 @@ import com.afollestad.mnmlscreenrecord.common.prefModule
 import com.afollestad.mnmlscreenrecord.di.mainModule
 import com.afollestad.mnmlscreenrecord.di.viewModelModule
 import com.afollestad.mnmlscreenrecord.engine.engineModule
-import com.afollestad.mnmlscreenrecord.logging.FabricTree
 import com.afollestad.mnmlscreenrecord.notifications.Notifications
 import com.afollestad.mnmlscreenrecord.notifications.notificationsModule
-import com.crashlytics.android.Crashlytics
-import io.fabric.sdk.android.Fabric
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -45,9 +42,6 @@ class MnmlApp : Application() {
     if (DEBUG) {
       Timber.plant(DebugTree())
     }
-
-    Timber.plant(FabricTree())
-    Fabric.with(this, Crashlytics())
 
     startKoin {
       androidLogger()

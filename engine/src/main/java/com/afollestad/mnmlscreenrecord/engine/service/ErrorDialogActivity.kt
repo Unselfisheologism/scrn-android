@@ -26,7 +26,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onCancel
 import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.afollestad.mnmlscreenrecord.common.misc.startActivity
-import com.crashlytics.android.Crashlytics
+import timber.log.Timber.d as log
 
 const val KEY_ERROR = "error"
 
@@ -45,7 +45,7 @@ class ErrorDialog : DialogFragment() {
       try {
         dialog.show(context.supportFragmentManager, TAG)
       } catch (e: IllegalStateException) {
-        Crashlytics.log("Not showing ErrorDialog due to IllegalStateException.")
+        log("Not showing ErrorDialog due to IllegalStateException.")
       }
     }
   }
@@ -71,9 +71,9 @@ class ErrorDialogActivity : AppCompatActivity() {
       context: Context,
       error: java.lang.Exception
     ) {
-      Crashlytics.log("Showing ErrorDialogActivity for $error")
+      log("Showing ErrorDialogActivity for $error")
       if (error !is FileSystemException) {
-        Crashlytics.logException(error)
+        log("Error occurred: ${error.message}", error)
       }
       context.startActivity<ErrorDialogActivity>(
           flags = FLAG_ACTIVITY_NEW_TASK,

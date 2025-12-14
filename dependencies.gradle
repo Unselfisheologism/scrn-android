@@ -11,7 +11,6 @@ ext.versions = [
     spotlessPlugin      : '3.24.0',
     versionPlugin       : '0.21.0',
     googleServices      : '4.3.0',
-    fabricPlugin        : '1.+',
 
     // Kotlin
     kotlin              : '1.3.41',
@@ -26,7 +25,6 @@ ext.versions = [
     androidxBrowser     : '1.0.0',
 
     // Other Google
-    firebaseCore        : '17.0.1',
     lifecycle           : '2.0.0',
 
     // Glide
@@ -48,7 +46,6 @@ ext.versions = [
 
     // Debug
     timber              : '4.7.1',
-    fabric              : '2.10.1@aar',
 
     // Test
     junit               : '4.12',

@@ -27,11 +27,6 @@ dependencies {
 
   // Square
   implementation 'com.squareup:seismic:' + versions.seismic
-
-  // Debug
-  implementation("com.crashlytics.sdk.android:crashlytics:${versions.fabric}") {
-    transitive = true
-  }
 }
 
 apply from: '../spotless.gradle'

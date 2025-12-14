@@ -12,4 +12,11 @@
   <string name="install_video_viewer">Please install a video viewer app, such as Google Photos.</string>
   <string name="install_web_browser">Please install a web browser app, such as Google Chrome.</string>
 
+  <!-- Prebid Mobile SDK configuration for Media.net ads -->
+  <string name="prebid_config_id">YOUR_PREBID_CONFIG_ID</string>
+  <string name="banner_ad_unit_id">YOUR_BANNER_AD_UNIT_ID</string>
+  <string name="banner_config_id">YOUR_BANNER_CONFIG_ID</string>
+  <string name="interstitial_ad_unit_id">YOUR_INTERSTITIAL_AD_UNIT_ID</string>
+  <string name="interstitial_config_id">YOUR_INTERSTITIAL_CONFIG_ID</string>
+
 </resources>

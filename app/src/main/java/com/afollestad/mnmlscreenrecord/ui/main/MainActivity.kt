@@ -16,10 +16,8 @@
 package com.afollestad.mnmlscreenrecord.ui.main
 
 import android.annotation.SuppressLint
-
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
-
 import android.content.Intent.EXTRA_STREAM
 import android.os.Bundle
 import android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION
@@ -71,12 +69,22 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import kotlinx.android.synthetic.main.include_appbar.app_toolbar as appToolbar
 import kotlinx.android.synthetic.main.include_appbar.toolbar_title as toolbarTitle
+import org.prebid.mobile.AdUnit
+import org.prebid.mobile.AdSize
+import org.prebid.mobile.PrebidMobile
+import org.prebid.mobile.TargetingParams
+import org.prebid.mobile.Result
+import kotlinx.android.synthetic.main.activity_main.ad_container
 
 /** @author Aidan Follestad (afollestad) */
 class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
 
   private val viewModel by viewModel<MainViewModel>()
   private val urlLauncher by inject<UrlLauncher> { parametersOf(this) }
+
+  // Prebid Mobile SDK ad units for Media.net integration
+  private var bannerAdUnit: AdUnit? = null
+  private var interstitialAdUnit: AdUnit? = null
 
   private val dataSource =
     emptySelectableDataSourceTyped<Recording>().apply {
@@ -131,6 +139,18 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
     viewModel.onFabEnabled()
         .asEnabled(this, fab)
 
+    // Track recording state to show interstitial after recording stops
+    var wasRecording = false
+    viewModel.onFabIconRes()
+        .observe(this) { iconRes ->
+          val isRecording = iconRes == R.drawable.ic_stop_32dp
+          if (wasRecording && !isRecording) {
+            // Recording just stopped, show interstitial ad
+            showInterstitialAfterRecording()
+          }
+          wasRecording = isRecording
+        }
+
     viewModel.onNeedOverlayPermission()
         .observeOn(mainThread())
         .subscribe { OverlayExplanationDialog.show(this) }
@@ -145,6 +165,7 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
         .attachLifecycle(this)
 
     checkForMediaProjectionAvailability()
+    initializeAds()
   }
 
   override fun onResume() {
@@ -283,6 +304,74 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
         onDismiss { finish() }
       }
     }
+  }
+
+  // Initialize Prebid Mobile SDK and ad units
+  private fun initializeAds() {
+    // Initialize Prebid for Media.net
+    PrebidMobile.setApplicationContext(this)
+
+    // Configure Media.net as bidder
+    PrebidMobile.initializeSdk(this, getString(R.string.prebid_config_id))
+
+    // Set targeting parameters if needed
+    TargetingParams.setAge(25)
+    TargetingParams.setGender(TargetingParams.Gender.FEMALE)
+
+    // Initialize banner ad
+    setupBannerAd()
+
+    // Initialize interstitial ad
+    setupInterstitialAd()
+  }
+
+  private fun setupBannerAd() {
+    bannerAdUnit = AdUnit(this, getString(R.string.banner_ad_unit_id), AdSize.BANNER_320x50)
+    bannerAdUnit?.setConfigId(getString(R.string.banner_config_id))
+
+    bannerAdUnit?.fetchDemand { result ->
+      if (result == Result.SUCCESS) {
+        runOnUiThread {
+          ad_container.visibility = android.view.View.VISIBLE
+          // In a real implementation, you would load the ad view here
+          // For now, we'll just show the container
+        }
+      }
+    }
+  }
+
+  private fun setupInterstitialAd() {
+    interstitialAdUnit = AdUnit(this, getString(R.string.interstitial_ad_unit_id), AdSize.INTERSTITIAL)
+    interstitialAdUnit?.setConfigId(getString(R.string.interstitial_config_id))
+
+    interstitialAdUnit?.fetchDemand { result ->
+      if (result == Result.SUCCESS) {
+        // Interstitial ad is ready to be displayed
+      }
+    }
+  }
+
+  // Call this method after recording stops
+  private fun showInterstitialAfterRecording() {
+    interstitialAdUnit?.fetchDemand { result ->
+      if (result == Result.SUCCESS && !isPremiumUser()) {
+        runOnUiThread {
+          // Show interstitial ad - in real implementation
+          // interstitialAd?.show()
+        }
+      }
+    }
+  }
+
+  private fun isPremiumUser(): Boolean {
+    // TODO: Implement premium user check based on your app's logic
+    return false
+  }
+
+  override fun onDestroy() {
+    bannerAdUnit?.destroy()
+    interstitialAdUnit?.destroy()
+    super.onDestroy()
   }
 
   private companion object {
