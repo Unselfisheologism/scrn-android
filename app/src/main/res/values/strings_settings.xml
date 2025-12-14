@@ -21,6 +21,9 @@
   <string name="setting_category_quality">Quality</string>
   <string name="setting_category_quality_desc">Modify audio and video quality such as frame rate and bit rate.</string>
 
+  <string name="setting_quality_preset">Quality Preset</string>
+  <string name="setting_quality_preset_desc">Select a preset for resolution, frame rate, and bitrate.</string>
+
   <string name="setting_bitrate">Video Bit Rate</string>
   <string name="setting_bitrate_desc">Screen capture will record at %1$s</string>
 
@@ -43,6 +46,15 @@
 
   <string name="setting_countdown">Countdown</string>
   <string name="setting_countdown_disabled">Recording will begin immediately.</string>
+
+  <string name="setting_max_duration">Max Duration</string>
+  <string name="setting_max_duration_desc">Limit recording duration.</string>
+  <string name="setting_max_duration_unlimited">Unlimited</string>
+  <plurals name="setting_max_duration_minutes_desc">
+    <item quantity="one">Recording will stop after %1$d minute.</item>
+    <item quantity="other">Recording will stop after %1$d minutes.</item>
+  </plurals>
+
   <plurals name="setting_countdown_desc">
     <item quantity="zero" translatable="false">@string/setting_countdown_disabled</item>
     <item quantity="one">%1$d second before recording begins.</item>

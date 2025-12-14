@@ -32,6 +32,7 @@ internal fun RealCaptureEngine.createVirtualDisplayAndStart(context: Context) {
       )
     } catch (e: RuntimeException) {
       isStarted = false
+      clearMaxDurationTimer()
       onCancel.onNext(Unit)
       onError.onNext(StartRecordingException(e))
     }
@@ -39,6 +40,7 @@ internal fun RealCaptureEngine.createVirtualDisplayAndStart(context: Context) {
 
   isStarted = true
   onStart.onNext(Unit)
+  scheduleMaxDurationStop()
   log("Media recorder started")
 }
 

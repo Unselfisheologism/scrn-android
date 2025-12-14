@@ -24,6 +24,8 @@ import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES.N
 import android.os.Handler
 import android.view.WindowManager
 import com.afollestad.mnmlscreenrecord.common.misc.startActivity
@@ -101,6 +103,21 @@ interface CaptureEngine {
    * Stops screen capture - commits the capture file and emits into the stop signal.
    */
   fun stop()
+
+  /**
+   * Pauses screen capture. Only supported on API 24+.
+   */
+  fun pause()
+
+  /**
+   * Resumes screen capture. Only supported on API 24+.
+   */
+  fun resume()
+
+  /**
+   * Returns true if capture is currently paused.
+   */
+  fun isPaused(): Boolean
 }
 
 /** @author Aidan Follestad (@afollestad) */
@@ -113,7 +130,8 @@ class RealCaptureEngine(
   internal val recordAudioPref: Pref<Boolean>,
   internal val audioBitRatePref: Pref<Int>,
   internal val resolutionWidthPref: Pref<Int>,
-  internal val resolutionHeightPref: Pref<Int>
+  internal val resolutionHeightPref: Pref<Int>,
+  internal val maxDurationMinutesPref: Pref<Int>
 ) : CaptureEngine {
 
   internal val handler = Handler()
@@ -126,8 +144,11 @@ class RealCaptureEngine(
   internal var display: VirtualDisplay? = null
   internal var projection: MediaProjection? = null
   internal var isStarted: Boolean = false
+  internal var paused: Boolean = false
   internal var recorder: MediaRecorder? = null
   internal var pendingFile: File? = null
+
+  internal var maxDurationStopRunnable: Runnable? = null
 
   override fun onStart(): Observable<Unit> = onStart
 
@@ -205,6 +226,8 @@ class RealCaptureEngine(
       return
     }
     isStarted = false
+    paused = false
+    clearMaxDurationTimer()
     log("stop()")
 
     try {
@@ -229,6 +252,53 @@ class RealCaptureEngine(
     } else {
       onCancel.onNext(Unit)
     }
+  }
+
+  override fun pause() {
+    if (!isStarted || paused) return
+    if (SDK_INT < N) {
+      onError.onNext(UnsupportedOperationException("Pausing a recording requires Android 7.0+"))
+      return
+    }
+    try {
+      recorder?.pause()
+      paused = true
+    } catch (e: Exception) {
+      onError.onNext(e)
+    }
+  }
+
+  override fun resume() {
+    if (!isStarted || !paused) return
+    if (SDK_INT < N) {
+      onError.onNext(UnsupportedOperationException("Resuming a recording requires Android 7.0+"))
+      return
+    }
+    try {
+      recorder?.resume()
+      paused = false
+    } catch (e: Exception) {
+      onError.onNext(e)
+    }
+  }
+
+  override fun isPaused(): Boolean = paused
+
+  internal fun clearMaxDurationTimer() {
+    maxDurationStopRunnable?.let(handler::removeCallbacks)
+    maxDurationStopRunnable = null
+  }
+
+  internal fun scheduleMaxDurationStop() {
+    clearMaxDurationTimer()
+
+    val minutes = maxDurationMinutesPref.get()
+    if (minutes <= 0) return
+
+    val durationMs = minutes * 60_000L
+    maxDurationStopRunnable = Runnable {
+      if (isStarted) stop()
+    }.also { handler.postDelayed(it, durationMs) }
   }
 
   private val projectionCallback = object : MediaProjection.Callback() {

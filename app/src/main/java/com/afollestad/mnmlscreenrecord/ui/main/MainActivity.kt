@@ -16,10 +16,10 @@
 package com.afollestad.mnmlscreenrecord.ui.main
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
+
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
-import android.content.Intent.ACTION_VIEW
+
 import android.content.Intent.EXTRA_STREAM
 import android.os.Bundle
 import android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION
@@ -240,13 +240,14 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
   }
 
   private fun onRecordingClicked(recording: Recording) {
-    try {
-      startActivity(Intent(ACTION_VIEW).apply {
-        setDataAndType(recording.toUri(), "video/*")
-      })
-    } catch (_: ActivityNotFoundException) {
-      toast(R.string.install_video_viewer)
-    }
+    startActivity<com.afollestad.mnmlscreenrecord.ui.editor.EditorActivity>(
+        extras = Bundle().apply {
+          putParcelable(
+              com.afollestad.mnmlscreenrecord.ui.editor.EditorActivity.EXTRA_RECORDING,
+              recording
+          )
+        }
+    )
   }
 
   private fun invalidateToolbarElevation(scrollY: Int) {
