@@ -2,6 +2,8 @@
 
 This document describes the integration of Media.net ads using the Prebid Mobile SDK in the MNML Screen Recorder app.
 
+**Note**: Firebase and Crashlytics dependencies have been completely removed from the project as of this integration. The app now uses standard Android logging (Timber) instead of Firebase Crashlytics for error reporting and debugging.
+
 ## Overview
 
 The integration implements:

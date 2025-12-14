@@ -34,7 +34,6 @@ dependencies {
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + versions.coroutines
 
   // Google/AndroidX
-  implementation 'com.google.firebase:firebase-core:' + versions.firebaseCore
   implementation 'androidx.preference:preference:' + versions.androidxPrefs
   implementation 'androidx.lifecycle:lifecycle-extensions:' + versions.lifecycle
   kapt 'androidx.lifecycle:lifecycle-compiler:' + versions.lifecycle
@@ -54,11 +53,6 @@ dependencies {
   implementation 'com.github.bumptech.glide:glide:' + versions.glide
   kapt 'com.github.bumptech.glide:compiler:' + versions.glide
 
-  // Debug
-  implementation("com.crashlytics.sdk.android:crashlytics:${versions.fabric}") {
-    transitive = true
-  }
-
   // Prebid Mobile SDK for Media.net ads
   implementation 'org.prebid:prebid-mobile-sdk:2.1.8'
 
@@ -73,6 +67,3 @@ dependencies {
 
 apply from: '../spotless.gradle'
 apply from: '../mock/mock.gradle'
-
-apply plugin: "io.fabric"
-apply plugin: 'com.google.gms.google-services'
