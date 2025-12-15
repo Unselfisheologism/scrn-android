@@ -74,34 +74,3 @@ jobs:
         with:
           name: debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
-
-      # Generate Release APK (requires secrets)
-      - name: Generate Release APK
-        if: secrets.SIGNING_KEY != ''
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          set -e
-          # decode signing key (expecting base64-encoded secret)
-          echo "$SIGNING_KEY" | base64 --decode > keystore.jks
-          # Assemble release. The project can read either of these -P properties; adjust if your build uses different property names.
-          ./gradlew assembleRelease --warning-mode=all --stacktrace \
-            -Pandroid.signingConfig.storeFile=keystore.jks \
-            -Pandroid.signingConfig.storePassword="$SIGNING_PASSWORD" \
-            -Pandroid.signingConfig.keyAlias="$KEY_ALIAS" \
-            -Pandroid.signingConfig.keyPassword="$KEY_PASSWORD" \
-            -Pandroid.injected.signing.store.file=keystore.jks \
-            -Pandroid.injected.signing.store.password="$SIGNING_PASSWORD" \
-            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
-            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
-
-      # Upload Release APK
-      - name: Upload Release APK (artifact)
-        if: success() && (secrets.SIGNING_KEY != '')
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: app/build/outputs/apk/release/app-release.apk
