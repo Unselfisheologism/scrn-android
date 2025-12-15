@@ -23,4 +23,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "blurr"
 include(":app")
+include(":common")
+include(":theming")
+include(":notifications")
+include(":engine")
+include(":testutil")
  

@@ -94,6 +94,11 @@ android {
 val libsuVersion = "6.0.0"
 
 dependencies {
+    // Project modules
+    implementation(project(":common"))
+    implementation(project(":theming"))
+    implementation(project(":notifications"))
+    implementation(project(":engine"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
