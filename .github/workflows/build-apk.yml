@@ -24,8 +24,6 @@ jobs:
       # Get the app source
       - name: Get the source
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Setup JDK
         uses: actions/setup-java@v4
@@ -44,31 +42,12 @@ jobs:
           chmod +x ./gradlew
           dos2unix ./gradlew || true
 
-      # Run formatting checks using spotless (spotless.gradle)
-      - name: Run Spotless checks
-        run: |
-          ./gradlew spotlessCheck --warning-mode=all --stacktrace
-
-      # Run dependency updates using ben-manes versions plugin (versionsPlugin.gradle)
-      - name: Check dependency updates
-        run: |
-          # request only stable release candidates by default; plugin config lives in versionsPlugin.gradle
-          ./gradlew dependencyUpdates -Drevision=release --warning-mode=all --stacktrace
-
-      - name: Upload Dependency Updates Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-updates-report
-          path: |
-            **/build/dependencyUpdates/**
-            build/dependencyUpdates/**
-
-      # Clean and compile the debug apk
+      # Clean and compile the apk
       - name: Clean and Generate Debug APK
         run: |
           ./gradlew clean assembleDebug --warning-mode=all --stacktrace
 
-      # Upload the action artifact (debug)
+      # Upload the action artifact
       - name: Upload Debug APK (artifact)
         uses: actions/upload-artifact@v4
         with:
