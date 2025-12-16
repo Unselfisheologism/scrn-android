@@ -127,6 +127,8 @@ dependencies {
     // https://mvnrepository.com/artifact/androidx.test.uiautomator/uiautomator
     implementation("androidx.test.uiautomator:uiautomator:2.3.0")
 
+    implementation(libs.prebid.mobile.sdk)
+
     // Remove Browser dependency for CustomTabsIntent since we're using popup WebView
     // implementation("androidx.browser:browser:1.8.0")
     

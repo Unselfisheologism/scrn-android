@@ -18,22 +18,23 @@ package com.afollestad.mnmlscreenrecord.ui.settings
 import android.content.Intent
 import android.os.Bundle
 import com.afollestad.mnmlscreenrecord.R
+import com.afollestad.mnmlscreenrecord.databinding.ActivitySettingsBinding
 import com.afollestad.mnmlscreenrecord.theming.DarkModeSwitchActivity
 import com.afollestad.mnmlscreenrecord.ui.main.MainActivity
-import kotlinx.android.synthetic.main.include_appbar.toolbar
-import kotlinx.android.synthetic.main.include_appbar.app_toolbar as appToolbar
-import kotlinx.android.synthetic.main.include_appbar.toolbar_title as toolbarTitle
 
 /** @author Aidan Follestad (afollestad) */
 class SettingsActivity : DarkModeSwitchActivity() {
 
+  private lateinit var binding: ActivitySettingsBinding
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_settings)
+    binding = ActivitySettingsBinding.inflate(layoutInflater)
+    setContentView(binding.root)
 
-    toolbarTitle.setText(R.string.settings)
+    binding.includeAppbar.toolbarTitle.setText(R.string.settings)
     setIsInRoot(true)
-    toolbar.setNavigationOnClickListener {
+    binding.includeAppbar.toolbar.setNavigationOnClickListener {
       if (supportFragmentManager.backStackEntryCount > 0) {
         supportFragmentManager.popBackStack()
       } else {
@@ -50,17 +51,17 @@ class SettingsActivity : DarkModeSwitchActivity() {
 
   fun setIsInRoot(root: Boolean) {
     if (root) {
-      toolbar.navigationIcon = getDrawable(R.drawable.ic_close)
+      binding.includeAppbar.toolbar.navigationIcon = getDrawable(R.drawable.ic_close)
     } else {
-      toolbar.navigationIcon = getDrawable(R.drawable.ic_back)
+      binding.includeAppbar.toolbar.navigationIcon = getDrawable(R.drawable.ic_back)
     }
   }
 
   fun invalidateToolbarElevation(scrollY: Int) {
-    if (scrollY > (toolbar.measuredHeight / 2)) {
-      appToolbar.elevation = resources.getDimension(R.dimen.raised_toolbar_elevation)
+    if (scrollY > (binding.includeAppbar.toolbar.measuredHeight / 2)) {
+      binding.includeAppbar.root.elevation = resources.getDimension(R.dimen.raised_toolbar_elevation)
     } else {
-      appToolbar.elevation = 0f
+      binding.includeAppbar.root.elevation = 0f
     }
   }
 

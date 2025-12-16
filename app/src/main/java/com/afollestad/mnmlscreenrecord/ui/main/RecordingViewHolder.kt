@@ -19,15 +19,12 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import com.afollestad.mnmlscreenrecord.R
 import com.afollestad.recyclical.ViewHolder
-import kotlinx.android.synthetic.main.list_item_recording.view.checkBox
-import kotlinx.android.synthetic.main.list_item_recording.view.details
-import kotlinx.android.synthetic.main.list_item_recording.view.name
-import kotlinx.android.synthetic.main.list_item_recording.view.thumbnail
 
 class RecordingViewHolder(itemView: View) : ViewHolder(itemView) {
-  val thumbnail: ImageView = itemView.thumbnail
-  val name: TextView = itemView.name
-  val details: TextView = itemView.details
-  val checkBox: CheckBox = itemView.checkBox
+  val thumbnail: ImageView = itemView.findViewById(R.id.thumbnail)
+  val name: TextView = itemView.findViewById(R.id.name)
+  val details: TextView = itemView.findViewById(R.id.details)
+  val checkBox: CheckBox = itemView.findViewById(R.id.checkBox)
 }
