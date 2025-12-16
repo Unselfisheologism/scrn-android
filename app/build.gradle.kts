@@ -24,7 +24,7 @@ if (versionPropsFile.exists()) {
 }
 
 android {
-    namespace = "com.blurr.voice"
+    namespace = "com.afollestad.mnmlscreenrecord"
     compileSdk = 35
 
     val debugSha1 = "D0:A1:49:03:FD:B5:37:DF:B5:36:51:B1:66:AE:70:11:E2:59:08:33"
