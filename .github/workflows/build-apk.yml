@@ -45,7 +45,7 @@ jobs:
       # Clean and compile the apk
       - name: Clean and Generate Debug APK
         run: |
-          ./gradlew clean assembleDebug --warning-mode=all --stacktrace
+          ./gradlew clean assembleDebug --warning-mode=all --stacktrace --info
 
       # Upload the action artifact
       - name: Upload Debug APK (artifact)
