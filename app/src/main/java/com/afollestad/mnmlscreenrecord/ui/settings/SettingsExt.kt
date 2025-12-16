@@ -17,6 +17,8 @@ package com.afollestad.mnmlscreenrecord.ui.settings
 
 import android.os.Environment.DIRECTORY_DCIM
 import android.os.Environment.getExternalStoragePublicDirectory
+import android.widget.SeekBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.afollestad.assent.Permission.WRITE_EXTERNAL_STORAGE
 import com.afollestad.assent.isAllGranted
@@ -28,8 +30,6 @@ import com.afollestad.materialdialogs.files.folderChooser
 import com.afollestad.mnmlscreenrecord.R
 import com.afollestad.mnmlscreenrecord.common.view.onProgressChanged
 import com.afollestad.mnmlscreenrecord.ui.settings.sub.SettingsRecordingFragment
-import kotlinx.android.synthetic.main.dialog_number_selector.view.label
-import kotlinx.android.synthetic.main.dialog_number_selector.view.seeker
 import java.io.File
 
 internal fun Fragment.showNumberSelector(
@@ -44,17 +44,21 @@ internal fun Fragment.showNumberSelector(
     message(R.string.setting_countdown_zero_note)
     customView(R.layout.dialog_number_selector)
     positiveButton(android.R.string.ok) {
-      val seekBar = getCustomView()?.seeker ?: return@positiveButton
-      onSelection(seekBar.progress)
+      val customView = getCustomView() ?: return@positiveButton
+      val seeker = customView.findViewById<SeekBar>(R.id.seeker)
+      onSelection(seeker.progress)
     }
   }
 
   val customView = dialog.getCustomView() ?: return
-  customView.label.text = "$current"
-  customView.seeker.max = max
-  customView.seeker.progress = current
-  customView.seeker.onProgressChanged {
-    customView.label.text = "$it"
+  val label = customView.findViewById<TextView>(R.id.label)
+  val seeker = customView.findViewById<SeekBar>(R.id.seeker)
+
+  label.text = "$current"
+  seeker.max = max
+  seeker.progress = current
+  seeker.onProgressChanged {
+    label.text = "$it"
   }
 }
 

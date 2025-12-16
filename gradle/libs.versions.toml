@@ -12,6 +12,7 @@ activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 appcompat = "1.7.0"
 spotless = "6.25.0"
+prebid = "2.1.8"
 
 [libraries]
 androidx-core = { module = "androidx.core:core", version.ref = "coreKtxVersion" }
@@ -31,6 +32,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+prebid-mobile-sdk = { group = "org.prebid", name = "prebid-mobile-sdk", version.ref = "prebid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

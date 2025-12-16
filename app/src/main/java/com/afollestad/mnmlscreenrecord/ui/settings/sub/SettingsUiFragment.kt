@@ -16,6 +16,7 @@
 package com.afollestad.mnmlscreenrecord.ui.settings.sub
 
 import android.os.Bundle
+import android.widget.EditText
 import androidx.preference.SwitchPreference
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
@@ -33,14 +34,13 @@ import com.afollestad.mnmlscreenrecord.ui.settings.base.BaseSettingsFragment
 import com.afollestad.mnmlscreenrecord.ui.settings.dialogs.TimeCallback
 import com.afollestad.mnmlscreenrecord.ui.settings.dialogs.TimePickerDialog
 import com.afollestad.rxkprefs.Pref
+import org.koin.android.ext.android.inject
+import org.koin.core.qualifier.named
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Calendar.HOUR_OF_DAY
 import java.util.Calendar.MINUTE
 import java.util.Locale
-import kotlinx.android.synthetic.main.dialog_text_input.view.input
-import org.koin.android.ext.android.inject
-import org.koin.core.qualifier.named
 
 /** @author Aidan Follestad (@afollestad) */
 class SettingsUiFragment : BaseSettingsFragment(), TimeCallback {
@@ -139,12 +139,13 @@ class SettingsUiFragment : BaseSettingsFragment(), TimeCallback {
         title(R.string.setting_watermark_text)
         customView(R.layout.dialog_text_input)
         positiveButton(R.string.select) {
-          val input = getCustomView()?.input ?: return@positiveButton
+          val customView = getCustomView() ?: return@positiveButton
+          val input = customView.findViewById<EditText>(R.id.input)
           watermarkTextPref.set(input.text.toString())
         }
       }
 
-      dialog.getCustomView()?.input?.setText(watermarkTextPref.get())
+      dialog.getCustomView()?.findViewById<EditText>(R.id.input)?.setText(watermarkTextPref.get())
       true
     }
 

@@ -38,6 +38,7 @@ import com.afollestad.mnmlscreenrecord.common.view.onDebouncedClick
 import com.afollestad.mnmlscreenrecord.common.view.onScroll
 import com.afollestad.mnmlscreenrecord.common.view.setOnMenuItemDebouncedClickListener
 import com.afollestad.mnmlscreenrecord.common.view.showOrHide
+import com.afollestad.mnmlscreenrecord.databinding.ActivityMainBinding
 import com.afollestad.mnmlscreenrecord.engine.permission.MnmlRationaleHandler
 import com.afollestad.mnmlscreenrecord.engine.permission.OverlayExplanationCallback
 import com.afollestad.mnmlscreenrecord.engine.permission.OverlayExplanationDialog
@@ -59,28 +60,21 @@ import com.afollestad.recyclical.withItem
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
-import kotlinx.android.synthetic.main.activity_main.empty_view
-import kotlinx.android.synthetic.main.activity_main.fab
-import kotlinx.android.synthetic.main.activity_main.list
-import kotlinx.android.synthetic.main.include_appbar.toolbar
-import kotlinx.android.synthetic.main.list_item_recording.view.thumbnail
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
-import kotlinx.android.synthetic.main.include_appbar.app_toolbar as appToolbar
-import kotlinx.android.synthetic.main.include_appbar.toolbar_title as toolbarTitle
 import org.prebid.mobile.AdUnit
 import org.prebid.mobile.AdSize
 import org.prebid.mobile.PrebidMobile
 import org.prebid.mobile.TargetingParams
 import org.prebid.mobile.Result
-import kotlinx.android.synthetic.main.activity_main.ad_container
 
 /** @author Aidan Follestad (afollestad) */
 class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
 
   private val viewModel by viewModel<MainViewModel>()
   private val urlLauncher by inject<UrlLauncher> { parametersOf(this) }
+  private lateinit var binding: ActivityMainBinding
 
   // Prebid Mobile SDK ad units for Media.net integration
   private var bannerAdUnit: AdUnit? = null
@@ -90,36 +84,37 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
     emptySelectableDataSourceTyped<Recording>().apply {
       onSelectionChange {
         if (it.hasSelection()) {
-          if (toolbar.navigationIcon == null) {
-            toolbar.run {
+          if (binding.includeAppbar.toolbar.navigationIcon == null) {
+            binding.includeAppbar.toolbar.run {
               setNavigationIcon(R.drawable.ic_close)
               menu.clear()
               inflateMenu(R.menu.edit_mode)
             }
           }
-          toolbarTitle.text = getString(R.string.app_name_short_withNumber, it.getSelectionCount())
-          toolbar.menu.run {
+          binding.includeAppbar.toolbarTitle.text = getString(R.string.app_name_short_withNumber, it.getSelectionCount())
+          binding.includeAppbar.toolbar.menu.run {
             findItem(R.id.share).isVisible = it.getSelectionCount() == 1
             findItem(R.id.delete).isEnabled = it.getSelectionCount() > 0
           }
         } else {
-          toolbar.run {
+          binding.includeAppbar.toolbar.run {
             navigationIcon = null
             menu.clear()
             inflateMenu(R.menu.main)
           }
-          toolbarTitle.text = getString(R.string.app_name_short)
+          binding.includeAppbar.toolbarTitle.text = getString(R.string.app_name_short)
         }
       }
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_main)
+    binding = ActivityMainBinding.inflate(layoutInflater)
+    setContentView(binding.root)
     setupToolbar()
     setupGrid()
 
-    fab.onDebouncedClick { viewModel.fabClicked() }
+    binding.fab.onDebouncedClick { viewModel.fabClicked() }
     lifecycle.addObserver(viewModel)
 
     viewModel.onRecordings()
@@ -131,13 +126,13 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
           )
         })
     viewModel.onFabColorRes()
-        .asBackgroundTint(this, fab)
+        .asBackgroundTint(this, binding.fab)
     viewModel.onFabIconRes()
-        .asIcon(this, fab)
+        .asIcon(this, binding.fab)
     viewModel.onFabTextRes()
-        .asText(this, fab)
+        .asText(this, binding.fab)
     viewModel.onFabEnabled()
-        .asEnabled(this, fab)
+        .asEnabled(this, binding.fab)
 
     // Track recording state to show interstitial after recording stops
     var wasRecording = false
@@ -170,7 +165,7 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
 
   override fun onResume() {
     super.onResume()
-    invalidateToolbarElevation(list.computeVerticalScrollOffset())
+    invalidateToolbarElevation(binding.list.computeVerticalScrollOffset())
   }
 
   override fun onBackPressed() {
@@ -209,7 +204,7 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
     }
   }
 
-  private fun setupToolbar() = toolbar.run {
+  private fun setupToolbar() = binding.includeAppbar.toolbar.run {
     inflateMenu(R.menu.main)
     setNavigationOnClickListener { dataSource.deselectAll() }
     setOnMenuItemDebouncedClickListener { item ->
@@ -230,16 +225,16 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
 
   @SuppressLint("SetTextI18n")
   private fun setupGrid() {
-    list.setup {
+    binding.list.setup {
       withDataSource(dataSource)
-      withEmptyView(empty_view)
+      withEmptyView(binding.emptyView)
       withItem<Recording, RecordingViewHolder>(R.layout.list_item_recording) {
         onBind(::RecordingViewHolder) { _, item ->
           Glide.with(thumbnail)
               .asBitmap()
               .apply(RequestOptions().frame(0))
               .load(item.toUri())
-              .into(itemView.thumbnail)
+              .into(thumbnail)
           name.text = item.name
           details.text = "${item.sizeString()} – ${item.timestampString()}"
           checkBox.showOrHide(hasSelection())
@@ -257,7 +252,7 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
         }
       }
     }
-    list.onScroll { invalidateToolbarElevation(it) }
+    binding.list.onScroll { invalidateToolbarElevation(it) }
   }
 
   private fun onRecordingClicked(recording: Recording) {
@@ -272,10 +267,10 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
   }
 
   private fun invalidateToolbarElevation(scrollY: Int) {
-    if (scrollY > (toolbar.measuredHeight / 2)) {
-      appToolbar.elevation = resources.getDimension(R.dimen.raised_toolbar_elevation)
+    if (scrollY > (binding.includeAppbar.toolbar.measuredHeight / 2)) {
+      binding.includeAppbar.root.elevation = resources.getDimension(R.dimen.raised_toolbar_elevation)
     } else {
-      appToolbar.elevation = 0f
+      binding.includeAppbar.root.elevation = 0f
     }
   }
 
@@ -332,7 +327,7 @@ class MainActivity : DarkModeSwitchActivity(), OverlayExplanationCallback {
     bannerAdUnit?.fetchDemand { result ->
       if (result == Result.SUCCESS) {
         runOnUiThread {
-          ad_container.visibility = android.view.View.VISIBLE
+          binding.adContainer.visibility = android.view.View.VISIBLE
           // In a real implementation, you would load the ad view here
           // For now, we'll just show the container
         }

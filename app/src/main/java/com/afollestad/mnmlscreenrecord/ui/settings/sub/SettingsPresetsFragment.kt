@@ -20,6 +20,7 @@ import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import android.content.Intent.EXTRA_TEXT
 import android.os.Bundle
+import android.widget.EditText
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
@@ -46,7 +47,6 @@ import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_VIDEO_BIT_RAT
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_ENABLED
 import com.afollestad.mnmlscreenrecord.common.prefs.PrefNames.PREF_WATERMARK_TEXT
 import com.afollestad.mnmlscreenrecord.ui.settings.base.BaseSettingsFragment
-import kotlinx.android.synthetic.main.dialog_text_input.view.input
 import org.json.JSONObject
 
 class SettingsPresetsFragment : BaseSettingsFragment() {
@@ -89,7 +89,8 @@ class SettingsPresetsFragment : BaseSettingsFragment() {
       title(R.string.setting_save_preset)
       customView(R.layout.dialog_text_input)
       positiveButton(R.string.select) {
-        val input = getCustomView()?.input ?: return@positiveButton
+        val customView = getCustomView() ?: return@positiveButton
+        val input = customView.findViewById<EditText>(R.id.input)
         val name = input.text.toString().trim()
         if (name.isEmpty()) return@positiveButton
 
@@ -97,7 +98,7 @@ class SettingsPresetsFragment : BaseSettingsFragment() {
       }
     }
 
-    dialog.getCustomView()?.input?.hint = getString(R.string.setting_preset_name)
+    dialog.getCustomView()?.findViewById<EditText>(R.id.input)?.hint = getString(R.string.setting_preset_name)
   }
 
   private fun promptChoosePreset(onSelected: (Preset) -> Unit) {

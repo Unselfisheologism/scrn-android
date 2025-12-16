@@ -22,28 +22,21 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.mnmlscreenrecord.R
 import com.afollestad.mnmlscreenrecord.common.misc.timestampString
 import com.afollestad.mnmlscreenrecord.common.misc.toast
+import com.afollestad.mnmlscreenrecord.databinding.ActivityEditorBinding
 import com.afollestad.mnmlscreenrecord.engine.recordings.Recording
 import com.afollestad.mnmlscreenrecord.engine.recordings.RecordingScanner
 import com.afollestad.mnmlscreenrecord.theming.DarkModeSwitchActivity
-import java.io.File
-import java.util.Date
-import kotlinx.android.synthetic.main.activity_editor.endLabel
-import kotlinx.android.synthetic.main.activity_editor.endSeek
-import kotlinx.android.synthetic.main.activity_editor.export
-import kotlinx.android.synthetic.main.activity_editor.playPause
-import kotlinx.android.synthetic.main.activity_editor.startLabel
-import kotlinx.android.synthetic.main.activity_editor.startSeek
-import kotlinx.android.synthetic.main.activity_editor.video
-import kotlinx.android.synthetic.main.include_appbar.toolbar
-import kotlinx.android.synthetic.main.include_appbar.toolbar_title as toolbarTitle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import java.io.File
+import java.util.Date
 
 class EditorActivity : DarkModeSwitchActivity() {
 
   private val recordingScanner by inject<RecordingScanner>()
+  private lateinit var binding: ActivityEditorBinding
 
   private lateinit var recording: Recording
   private var durationMs: Long = 0L
@@ -53,7 +46,8 @@ class EditorActivity : DarkModeSwitchActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_editor)
+    binding = ActivityEditorBinding.inflate(layoutInflater)
+    setContentView(binding.root)
 
     recording = intent.getParcelableExtra(EXTRA_RECORDING)
         ?: throw IllegalStateException("Missing EXTRA_RECORDING")
@@ -64,58 +58,58 @@ class EditorActivity : DarkModeSwitchActivity() {
   }
 
   private fun setupToolbar() {
-    setSupportActionBar(toolbar)
+    setSupportActionBar(binding.includeAppbar.toolbar)
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    toolbar.setNavigationOnClickListener { finish() }
+    binding.includeAppbar.toolbar.setNavigationOnClickListener { finish() }
 
-    toolbarTitle.text = getString(R.string.editor_title)
+    binding.includeAppbar.toolbarTitle.text = getString(R.string.editor_title)
   }
 
   private fun setupVideo() {
-    video.setVideoPath(recording.path)
-    video.setOnPreparedListener { player ->
+    binding.video.setVideoPath(recording.path)
+    binding.video.setOnPreparedListener { player ->
       durationMs = player.duration.toLong()
       startMs = 0L
       endMs = durationMs
       updateLabels()
-      startSeek.max = durationMs.toInt()
-      endSeek.max = durationMs.toInt()
-      endSeek.progress = durationMs.toInt()
+      binding.startSeek.max = durationMs.toInt()
+      binding.endSeek.max = durationMs.toInt()
+      binding.endSeek.progress = durationMs.toInt()
     }
 
     if (durationMs <= 0L) {
       durationMs = loadDurationMs(recording.path)
       if (durationMs > 0L) {
-        startSeek.max = durationMs.toInt()
-        endSeek.max = durationMs.toInt()
-        endSeek.progress = durationMs.toInt()
+        binding.startSeek.max = durationMs.toInt()
+        binding.endSeek.max = durationMs.toInt()
+        binding.endSeek.progress = durationMs.toInt()
         startMs = 0L
         endMs = durationMs
         updateLabels()
       }
     }
 
-    playPause.setOnClickListener {
-      if (video.isPlaying) {
-        video.pause()
-        playPause.setText(R.string.editor_play)
+    binding.playPause.setOnClickListener {
+      if (binding.video.isPlaying) {
+        binding.video.pause()
+        binding.playPause.setText(R.string.editor_play)
       } else {
-        if (video.currentPosition < startMs || video.currentPosition > endMs) {
-          video.seekTo(startMs.toInt())
+        if (binding.video.currentPosition < startMs || binding.video.currentPosition > endMs) {
+          binding.video.seekTo(startMs.toInt())
         }
-        video.start()
-        playPause.setText(R.string.editor_pause)
+        binding.video.start()
+        binding.playPause.setText(R.string.editor_pause)
       }
     }
   }
 
   private fun setupTrimControls() {
-    startSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    binding.startSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
       override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (!fromUser) return
         startMs = progress.toLong().coerceAtMost(endMs)
         updateLabels()
-        video.seekTo(startMs.toInt())
+        binding.video.seekTo(startMs.toInt())
       }
 
       override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
@@ -123,7 +117,7 @@ class EditorActivity : DarkModeSwitchActivity() {
       override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
     })
 
-    endSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    binding.endSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
       override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (!fromUser) return
         endMs = progress.toLong().coerceAtLeast(startMs)
@@ -135,7 +129,7 @@ class EditorActivity : DarkModeSwitchActivity() {
       override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
     })
 
-    export.setOnClickListener { exportTrimmed() }
+    binding.export.setOnClickListener { exportTrimmed() }
   }
 
   private fun exportTrimmed() {
@@ -154,9 +148,9 @@ class EditorActivity : DarkModeSwitchActivity() {
       cancelOnTouchOutside(false)
     }
 
-    export.isEnabled = false
-    startSeek.isEnabled = false
-    endSeek.isEnabled = false
+    binding.export.isEnabled = false
+    binding.startSeek.isEnabled = false
+    binding.endSeek.isEnabled = false
 
     GlobalScope.launch(Dispatchers.IO) {
       try {
@@ -177,9 +171,9 @@ class EditorActivity : DarkModeSwitchActivity() {
       } catch (e: Exception) {
         runOnUiThread {
           dialog.dismiss()
-          export.isEnabled = true
-          startSeek.isEnabled = true
-          endSeek.isEnabled = true
+          binding.export.isEnabled = true
+          binding.startSeek.isEnabled = true
+          binding.endSeek.isEnabled = true
           MaterialDialog(this@EditorActivity).show {
             title(text = "Error")
             message(text = e.message ?: e.toString())
@@ -197,8 +191,8 @@ class EditorActivity : DarkModeSwitchActivity() {
   }
 
   private fun updateLabels() {
-    startLabel.text = getString(R.string.editor_start_time, startMs.formatDuration())
-    endLabel.text = getString(R.string.editor_end_time, endMs.formatDuration())
+    binding.startLabel.text = getString(R.string.editor_start_time, startMs.formatDuration())
+    binding.endLabel.text = getString(R.string.editor_end_time, endMs.formatDuration())
   }
 
   private fun loadDurationMs(path: String): Long {
