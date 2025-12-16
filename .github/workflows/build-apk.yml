@@ -12,10 +12,10 @@ jobs:
     steps:
       # Get the app source
       - name: Get the source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Gradle Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -35,16 +35,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Make gradlew executable and fix line endings
-      - name: Fix gradlew permissions and line endings
-        run: |
-          chmod +x ./gradlew
-          dos2unix ./gradlew || true
+      # Make gradlew executable
+      - name: Make Gradlew Executable
+        run: chmod +x ./gradlew
 
       # Clean and compile the apk
       - name: Clean and Generate Debug APK
         run: |
-          ./gradlew clean assembleDebug --warning-mode=all --stacktrace --info
+          ./gradlew clean assembleDebug --warning-mode=all --stacktrace
 
       # Upload the action artifact
       - name: Upload Debug APK (artifact)
