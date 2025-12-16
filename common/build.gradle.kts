@@ -28,7 +28,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     // Koin
-    api("org.koin:koin-android:3.5.3")
+    api("org.koin:koin-android:3.5.6")
 
     // afollestad
     api("com.afollestad:rxkprefs:1.2.5")
